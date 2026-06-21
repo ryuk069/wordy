@@ -5,8 +5,11 @@ type ContentProps = {
 
 const Content = ({
   numberOfRows = 6,
-  numberOfLetters = 10,
+  numberOfLetters = 8,
 }: ContentProps) => {
+
+  
+
   return (
     <div
       className="gap-3 p-2 grid"
