@@ -1,4 +1,10 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useCallback, useMemo } from "react";
+
+type KeyboardProps = {
+  activeKey: string | null;
+  setActiveKey: React.Dispatch<React.SetStateAction<string | null>>;
+  spaceAsEnter: boolean;
+};
 
 const KEYBOARD_ROWS: string[][] = [
   ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
@@ -6,30 +12,24 @@ const KEYBOARD_ROWS: string[][] = [
   ["Enter", "Z", "X", "C", "V", "B", "N", "M", "Backspace"],
 ];
 
-const Keyboard = () => {
-  const [activeKey, setActiveKey] = useState<string | null>(null);
-
-  const validKeys = useMemo(
-    () => new Set(KEYBOARD_ROWS.flat()),
-    []
-  );
+const Keyboard = ({ activeKey, setActiveKey, spaceAsEnter }: KeyboardProps) => {
+  const validKeys = useMemo(() => new Set(KEYBOARD_ROWS.flat()), []);
 
   const normalizeKey = useCallback((key: string): string => {
+    if (spaceAsEnter && key === " ") {
+      return "Enter";
+    }
     if (key === "Backspace" || key === "Enter") return key;
     return key.toUpperCase();
-  }, []);
-
-  const handleKeyAction = useCallback((key: string) => {
-    console.log("Key activated:", key);
-  }, []);
+  }, [spaceAsEnter]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
       const key = normalizeKey(e.key);
       if (!validKeys.has(key)) return;
 
       setActiveKey(key);
-      handleKeyAction(key);
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -46,10 +46,9 @@ const Keyboard = () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [validKeys, normalizeKey, handleKeyAction]);
+  }, [validKeys, normalizeKey, setActiveKey]);
 
   const handleClick = (key: string) => {
-    handleKeyAction(key);
     setActiveKey(key);
     setTimeout(() => setActiveKey(null), 100);
   };
@@ -63,7 +62,8 @@ const Keyboard = () => {
           style={{ marginLeft: `${rowIndex * 20}px` }}
         >
           {row.map((key) => {
-            const isSpecialKey = key === "Enter" || key === "Backspace";
+            const isSpecialKey =
+              key === "Enter" || key === "Backspace";
             const isActive = activeKey === key;
 
             return (
@@ -72,7 +72,7 @@ const Keyboard = () => {
                 onClick={() => handleClick(key)}
                 className={`border-2 h-16 flex items-center justify-center rounded-md font-medium select-none cursor-pointer active:scale-95 text-gray-500 hover:bg-gray-100 hover:text-black ${
                   isSpecialKey ? "w-23 text-sm" : "w-15"
-                } ${isActive ? "bg-gray-200 text-black scale-95" : ""}`}
+                } ${isActive ? "bg-black dark:bg-white text-white dark:text-black scale-95" : ""}`}
               >
                 {key}
               </div>

@@ -28,9 +28,9 @@ const Navbar = () => {
     element.style.zIndex = "20";
   }
 
-    function settings() {
+  function settings() {
     const element = document.getElementsByClassName(
-      "howtoplay",
+      "settings",
     )[0] as HTMLElement;
 
     element.style.zIndex = "20";
@@ -38,16 +38,12 @@ const Navbar = () => {
 
   return (
     <nav className=" w-full h-full flex items-center justify-between">
-      <Button type="navicon" iconName={<Menu />} />
+      <Button iconName={<Menu />} />
       <div className="flex gap-2">
-        <Button type="navicon" iconName={<CirclePlus />} />
-        <Button type="navicon" iconName={<Moon />} functionName={changeTheme} />
-        <Button
-          type="navicon"
-          iconName={<CircleQuestionMark />}
-          functionName={howtoplay}
-        />
-        <Button type="navicon" iconName={<Settings />} functionName={settings} />
+        <Button iconName={<CirclePlus />} />
+        <Button iconName={<Moon />} functionName={changeTheme} />
+        <Button iconName={<CircleQuestionMark />} functionName={howtoplay} />
+        <Button iconName={<Settings />} functionName={settings} />
       </div>
     </nav>
   );
