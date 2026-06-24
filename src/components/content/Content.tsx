@@ -3,51 +3,76 @@ import { useEffect } from "react";
 type ContentProps = {
   numberOfRows?: number;
   numberOfLetters: number;
-  currentPosition: [number, number];
-  setCurrentPosition: React.Dispatch<React.SetStateAction<[number, number]>>;
   activeKey: string | null;
+  positionRef: React.RefObject<[number, number]>;
+  gridRef: React.RefObject<string[][]>;
+  validWords: Set<string>;
 };
 
 const Content = ({
   numberOfRows = 6,
   numberOfLetters,
   activeKey,
-  currentPosition,
-  setCurrentPosition,
+  positionRef,
+  gridRef,
+  validWords
 }: ContentProps) => {
   useEffect(() => {
-  if (!activeKey) return;
+    if (!activeKey) return;
+    if (!positionRef.current || !gridRef.current) return;
 
-  switch (activeKey) {
-    case "Enter":
-      console.log("Enter pressed");
-      break;
+    const [row, col] = positionRef.current;
 
-    case "Backspace":
-      console.log("Backspace pressed");
-      break;
+    if (activeKey === "Enter") {
+      if (positionRef.current[1] === numberOfLetters) {
+        const guessedWord = gridRef.current[row].join("").toLowerCase();
 
+        if (!validWords.has(guessedWord)) {
+          console.log("Invalid word");
+          return;
+        }
 
-    default:
-      console.log("Letter pressed:", activeKey);
-      break;
-  }
-}, [activeKey]);
-  
+        console.log("Valid word");
+      }
+
+      return;
+    }
+
+    if (activeKey === "Backspace") {
+      if (col === 0) return;
+
+      gridRef.current[row][col - 1] = "";
+      positionRef.current = [row, col - 1];
+      return;
+    }
+
+    if (col >= numberOfLetters) return;
+
+    gridRef.current[row][col] = activeKey;
+    positionRef.current = [row, col + 1];
+  }, [activeKey, numberOfLetters, positionRef, gridRef]);
+
   return (
     <div
-      className="gap-3 p-2 grid"
+      className="grid gap-3 p-2"
       style={{
         gridTemplateColumns: `repeat(${numberOfLetters}, minmax(0, 1fr))`,
       }}
     >
       {Array.from({ length: numberOfRows * numberOfLetters }).map(
-        (_, index) => (
-          <div
-            key={index}
-            className="border-2 h-13 w-13 flex items-center justify-center"
-          ></div>
-        ),
+        (_, index) => {
+          const row = Math.floor(index / numberOfLetters);
+          const col = index % numberOfLetters;
+
+          return (
+            <div
+              key={index}
+              className="border-2 h-13 w-13 flex items-center justify-center uppercase font-bold text-lg"
+            >
+              {gridRef.current?.[row]?.[col] ?? ""}
+            </div>
+          );
+        },
       )}
     </div>
   );

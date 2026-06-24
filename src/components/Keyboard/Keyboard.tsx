@@ -3,7 +3,9 @@ import { useEffect, useCallback, useMemo } from "react";
 type KeyboardProps = {
   activeKey: string | null;
   setActiveKey: React.Dispatch<React.SetStateAction<string | null>>;
+  positionRef: React.RefObject<[number, number]>;
   spaceAsEnter: boolean;
+  numberOfLetters: number;
 };
 
 const KEYBOARD_ROWS: string[][] = [
@@ -12,43 +14,76 @@ const KEYBOARD_ROWS: string[][] = [
   ["Enter", "Z", "X", "C", "V", "B", "N", "M", "Backspace"],
 ];
 
-const Keyboard = ({ activeKey, setActiveKey, spaceAsEnter }: KeyboardProps) => {
+const Keyboard = ({
+  activeKey,
+  setActiveKey,
+  positionRef,
+  spaceAsEnter,
+  numberOfLetters,
+}: KeyboardProps) => {
   const validKeys = useMemo(() => new Set(KEYBOARD_ROWS.flat()), []);
 
-  const normalizeKey = useCallback((key: string): string => {
-    if (spaceAsEnter && key === " ") {
-      return "Enter";
-    }
-    if (key === "Backspace" || key === "Enter") return key;
-    return key.toUpperCase();
-  }, [spaceAsEnter]);
+  const normalizeKey = useCallback(
+    (key: string): string => {
+      if (spaceAsEnter && key === " ") {
+        return "Enter";
+      }
+      if (key === "Backspace" || key === "Enter") return key;
+      return key.toUpperCase();
+    },
+    [spaceAsEnter],
+  );
+
+  const canPressKey = useCallback(
+    (key: string) => {
+      if (
+        numberOfLetters === positionRef.current[1] &&
+        key !== "Enter" &&
+        key !== "Backspace"
+      ) {
+        return false;
+      }
+
+      if (
+        positionRef.current[1] === 0 &&
+        (key === "Backspace")
+      ) {
+        return false;
+      }
+
+      return true;
+    },
+    [numberOfLetters, positionRef],
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
+
       const key = normalizeKey(e.key);
+
       if (!validKeys.has(key)) return;
+
+      if (!canPressKey(key)) return;
 
       setActiveKey(key);
-    };
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      const key = normalizeKey(e.key);
-      if (!validKeys.has(key)) return;
-
-      setActiveKey(null);
+      setTimeout(() => {
+        setActiveKey(null);
+      }, 0);
     };
 
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [validKeys, normalizeKey, setActiveKey]);
+  }, [validKeys, normalizeKey, canPressKey, setActiveKey]);
 
   const handleClick = (key: string) => {
+    if (!canPressKey(key)) {
+      return;
+    }
     setActiveKey(key);
     setTimeout(() => setActiveKey(null), 100);
   };
@@ -62,8 +97,7 @@ const Keyboard = ({ activeKey, setActiveKey, spaceAsEnter }: KeyboardProps) => {
           style={{ marginLeft: `${rowIndex * 20}px` }}
         >
           {row.map((key) => {
-            const isSpecialKey =
-              key === "Enter" || key === "Backspace";
+            const isSpecialKey = key === "Enter" || key === "Backspace";
             const isActive = activeKey === key;
 
             return (
