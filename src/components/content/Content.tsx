@@ -7,6 +7,7 @@ type ContentProps = {
   positionRef: React.RefObject<[number, number]>;
   gridRef: React.RefObject<string[][]>;
   validWords: Set<string>;
+  wordToGuess: string;
 };
 
 const Content = ({
@@ -15,8 +16,42 @@ const Content = ({
   activeKey,
   positionRef,
   gridRef,
-  validWords
+  validWords,
+  wordToGuess,
 }: ContentProps) => {
+  function verifyGuess() {
+    const arrOfLetters = wordToGuess.split("");
+    const [row] = positionRef.current;
+    // const grayStyle = {
+    //   background: "gray",
+    // };
+    // const yellowStyle = {
+    //   background: "yellow",
+    // };
+    // const greenStyle = {
+    //   background: "green",
+    // };
+
+    for (let index = 0; index < numberOfLetters; index++) {
+      const boxIndex = row * numberOfLetters + index;
+      if (arrOfLetters.includes(gridRef.current?.[row]?.[index])) {
+        if (gridRef.current?.[row]?.[index] === arrOfLetters[index]) {
+          document
+            .getElementsByClassName(`box-${boxIndex}`)[0]
+            .classList.add("greenStyle");
+        } else {
+          document
+            .getElementsByClassName(`box-${boxIndex}`)[0]
+            .classList.add("orangeStyle");
+        }
+      } else {
+        document
+          .getElementsByClassName(`box-${boxIndex}`)[0]
+          .classList.add("grayStyle");
+      }
+    }
+  }
+
   useEffect(() => {
     if (!activeKey) return;
     if (!positionRef.current || !gridRef.current) return;
@@ -30,9 +65,15 @@ const Content = ({
         if (!validWords.has(guessedWord)) {
           console.log("Invalid word");
           return;
+        } else {
+          verifyGuess();
+          if (guessedWord == wordToGuess) {
+            console.log("congrats");
+          } else {
+            positionRef.current[0]++;
+            positionRef.current[1] = 0;
+          }
         }
-
-        console.log("Valid word");
       }
 
       return;
@@ -48,9 +89,9 @@ const Content = ({
 
     if (col >= numberOfLetters) return;
 
-    gridRef.current[row][col] = activeKey;
+    gridRef.current[row][col] = activeKey.toLowerCase();
     positionRef.current = [row, col + 1];
-  }, [activeKey, numberOfLetters, positionRef, gridRef]);
+  }, [activeKey, numberOfLetters, positionRef, gridRef, wordToGuess]);
 
   return (
     <div
@@ -67,7 +108,7 @@ const Content = ({
           return (
             <div
               key={index}
-              className="border-2 h-13 w-13 flex items-center justify-center uppercase font-bold text-lg"
+              className={`border-2 h-13 w-13 flex items-center justify-center uppercase font-bold text-lg box-${index}`}
             >
               {gridRef.current?.[row]?.[col] ?? ""}
             </div>

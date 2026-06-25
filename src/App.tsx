@@ -18,7 +18,7 @@ function App() {
     hard: hardWords,
   };
 
-  const [difficulty] = useState<Difficulty>("medium");
+  const [difficulty] = useState<Difficulty>("easy");
 
   const [spaceAsEnter, setSpaceAsEnter] = useState<boolean>(false);
 
@@ -36,11 +36,19 @@ function App() {
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    playgroundRef.current?.focus();
   }, []);
 
-  const renderCount = useRef<number>(1);
+  // const renderCount = useRef<number>(1);
 
   const positionRef = useRef<[number, number]>([0, 0]);
+
+  const playgroundRef = useRef<HTMLDivElement>(null);
+
+  const HowtoplayRef = useRef<HTMLDivElement>(null);
+
+  const SettingsRef = useRef<HTMLDivElement>(null);
 
   const gridRef = useRef<string[][]>(
     Array.from({ length: 6 }, () =>
@@ -50,18 +58,25 @@ function App() {
 
   const validWords = useMemo(() => new Set(WORDS[difficulty]), [difficulty]);
 
-  console.log(renderCount.current++);
-  console.log(wordToGuess);
 
   return (
     <>
-      <Howtoplay />
+      <Howtoplay playgroundRef={playgroundRef} HowtoplayRef={HowtoplayRef} />
 
-      <Settings spaceAsEnter={spaceAsEnter} setSpaceAsEnter={setSpaceAsEnter} />
+      <Settings
+        spaceAsEnter={spaceAsEnter}
+        setSpaceAsEnter={setSpaceAsEnter}
+        playgroundRef={playgroundRef}
+        SettingsRef={SettingsRef}
+      />
 
-      <div className="w-full h-full flex flex-col dark:bg-black dark:text-white absolute z-15 bg-white">
+      <div
+        className="w-full h-full flex flex-col dark:bg-black dark:text-white absolute z-15 bg-white"
+        ref={playgroundRef}
+        tabIndex={0}
+      >
         <header className="w-full h-7/100 border-2 flex justify-center items-center px-5 py-2">
-          <Navbar />
+          <Navbar HowtoplayRef={HowtoplayRef} SettingsRef={SettingsRef} />
         </header>
 
         <main className="h-6/10 flex justify-center items-center">
@@ -71,6 +86,7 @@ function App() {
             positionRef={positionRef}
             gridRef={gridRef}
             validWords={validWords}
+            wordToGuess={wordToGuess}
           />
         </main>
 
@@ -83,6 +99,7 @@ function App() {
             spaceAsEnter={spaceAsEnter}
             positionRef={positionRef}
             numberOfLetters={wordToGuess.length}
+            playgroundRef={playgroundRef}
           />
         </footer>
       </div>

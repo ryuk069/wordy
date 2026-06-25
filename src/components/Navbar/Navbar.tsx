@@ -7,7 +7,12 @@ import {
 } from "lucide-react";
 import Button from "../Button/Button";
 
-const Navbar = () => {
+interface NavbarProps {
+  HowtoplayRef: React.RefObject<HTMLDivElement | null>;
+  SettingsRef: React.RefObject<HTMLDivElement | null>;
+}
+
+const Navbar = ({ HowtoplayRef, SettingsRef }: NavbarProps) => {
   function changeTheme() {
     const isDark = document.documentElement.classList.contains("dark");
 
@@ -21,19 +26,21 @@ const Navbar = () => {
   }
 
   function howtoplay() {
-    const element = document.getElementsByClassName(
-      "howtoplay",
-    )[0] as HTMLElement;
+    const element = HowtoplayRef.current;
+
+    if (!element) return;
 
     element.style.zIndex = "20";
+    element.focus();
   }
 
   function settings() {
-    const element = document.getElementsByClassName(
-      "settings",
-    )[0] as HTMLElement;
+    const element = SettingsRef.current;
+
+    if (!element) return;
 
     element.style.zIndex = "20";
+    element.focus();
   }
 
   return (

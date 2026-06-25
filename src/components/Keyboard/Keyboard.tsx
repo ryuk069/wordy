@@ -6,6 +6,7 @@ type KeyboardProps = {
   positionRef: React.RefObject<[number, number]>;
   spaceAsEnter: boolean;
   numberOfLetters: number;
+  playgroundRef: React.RefObject<HTMLDivElement | null>;
 };
 
 const KEYBOARD_ROWS: string[][] = [
@@ -20,6 +21,7 @@ const Keyboard = ({
   positionRef,
   spaceAsEnter,
   numberOfLetters,
+  playgroundRef,
 }: KeyboardProps) => {
   const validKeys = useMemo(() => new Set(KEYBOARD_ROWS.flat()), []);
 
@@ -44,10 +46,7 @@ const Keyboard = ({
         return false;
       }
 
-      if (
-        positionRef.current[1] === 0 &&
-        (key === "Backspace")
-      ) {
+      if (positionRef.current[1] === 0 && key === "Backspace") {
         return false;
       }
 
@@ -57,8 +56,12 @@ const Keyboard = ({
   );
 
   useEffect(() => {
+    const playground = playgroundRef.current;
+
+    if (!playground) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.repeat) return;
+      // if (e.repeat) return;
 
       const key = normalizeKey(e.key);
 
@@ -70,15 +73,15 @@ const Keyboard = ({
 
       setTimeout(() => {
         setActiveKey(null);
-      }, 0);
+      }, 150);
     };
 
-    window.addEventListener("keydown", handleKeyDown);
+    playground.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
+      playground.removeEventListener("keydown", handleKeyDown);
     };
-  }, [validKeys, normalizeKey, canPressKey, setActiveKey]);
+  }, [validKeys, normalizeKey, canPressKey, setActiveKey, playgroundRef]);
 
   const handleClick = (key: string) => {
     if (!canPressKey(key)) {
