@@ -11,12 +11,12 @@ import hardWords from "./Words/hard.json";
 
 type Difficulty = "easy" | "medium" | "hard";
 
+const WORDS = {
+  easy: easyWords,
+  medium: mediumWords,
+  hard: hardWords,
+};
 function App() {
-  const WORDS = {
-    easy: easyWords,
-    medium: mediumWords,
-    hard: hardWords,
-  };
 
   const [difficulty] = useState<Difficulty>("easy");
 
@@ -27,26 +27,29 @@ function App() {
   const [wordToGuess] = useState(() => {
     const words = WORDS[difficulty];
 
-    return words[Math.floor(Math.random() * words.length)];
+    return words[Math.floor(Math.random() * words.length)]!;
   });
 
   useEffect(() => {
-    if (localStorage.theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    const isDark = localStorage.getItem("theme") === "dark";
+
+    document.documentElement.classList.toggle("dark", isDark);
 
     playgroundRef.current?.focus();
-  }, []);
+    console.log(wordToGuess);
+  }, [wordToGuess]);
 
-  // const renderCount = useRef<number>(1);
+  useEffect(() => {
+    console.log(renderCount.current++);
+  }, [activeKey]);
+
+  const renderCount = useRef<number>(0);
 
   const positionRef = useRef<[number, number]>([0, 0]);
 
   const playgroundRef = useRef<HTMLDivElement>(null);
 
-  const HowtoplayRef = useRef<HTMLDivElement>(null);
+  const howToPlayRef = useRef<HTMLDivElement>(null);
 
   const SettingsRef = useRef<HTMLDivElement>(null);
 
@@ -56,12 +59,16 @@ function App() {
     ),
   );
 
-  const validWords = useMemo(() => new Set(WORDS[difficulty]), [difficulty]);
+  const keyRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  const validWords = useMemo(
+    () => new Set(WORDS[difficulty]),
+    [difficulty],
+  );
 
   return (
     <>
-      <Howtoplay playgroundRef={playgroundRef} HowtoplayRef={HowtoplayRef} />
+      <Howtoplay playgroundRef={playgroundRef} howToPlayRef={howToPlayRef} />
 
       <Settings
         spaceAsEnter={spaceAsEnter}
@@ -76,7 +83,7 @@ function App() {
         tabIndex={0}
       >
         <header className="w-full h-7/100 border-2 flex justify-center items-center px-5 py-2">
-          <Navbar HowtoplayRef={HowtoplayRef} SettingsRef={SettingsRef} />
+          <Navbar howToPlayRef={howToPlayRef} SettingsRef={SettingsRef} />
         </header>
 
         <main className="h-6/10 flex justify-center items-center">
@@ -87,6 +94,7 @@ function App() {
             gridRef={gridRef}
             validWords={validWords}
             wordToGuess={wordToGuess}
+            keyRefs={keyRefs}
           />
         </main>
 
@@ -100,6 +108,7 @@ function App() {
             positionRef={positionRef}
             numberOfLetters={wordToGuess.length}
             playgroundRef={playgroundRef}
+            keyRefs={keyRefs}
           />
         </footer>
       </div>

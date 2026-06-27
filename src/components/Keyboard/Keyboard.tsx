@@ -7,6 +7,7 @@ type KeyboardProps = {
   spaceAsEnter: boolean;
   numberOfLetters: number;
   playgroundRef: React.RefObject<HTMLDivElement | null>;
+  keyRefs: React.RefObject<Record<string, HTMLDivElement | null>>;
 };
 
 const KEYBOARD_ROWS: string[][] = [
@@ -22,6 +23,7 @@ const Keyboard = ({
   spaceAsEnter,
   numberOfLetters,
   playgroundRef,
+  keyRefs,
 }: KeyboardProps) => {
   const validKeys = useMemo(() => new Set(KEYBOARD_ROWS.flat()), []);
 
@@ -102,14 +104,27 @@ const Keyboard = ({
           {row.map((key) => {
             const isSpecialKey = key === "Enter" || key === "Backspace";
             const isActive = activeKey === key;
+            const hasColor =
+              keyRefs.current[key.toLowerCase()]?.classList.contains(
+                "greenStyle",
+              ) ||
+              keyRefs.current[key.toLowerCase()]?.classList.contains(
+                "orangeStyle",
+              ) ||
+              keyRefs.current[key.toLowerCase()]?.classList.contains(
+                "grayStyle",
+              );
 
             return (
               <div
                 key={key}
                 onClick={() => handleClick(key)}
-                className={`border-2 h-16 flex items-center justify-center rounded-md font-medium select-none cursor-pointer active:scale-95 text-gray-500 hover:bg-gray-100 hover:text-black ${
+                ref={(el) => {
+                  keyRefs.current[key.toLowerCase()] = el;
+                }}
+                className={`border-2 h-16 flex items-center justify-center rounded-md font-medium select-none cursor-pointer active:scale-95 hover:bg-gray-100 hover:text-black ${
                   isSpecialKey ? "w-23 text-sm" : "w-15"
-                } ${isActive ? "bg-black dark:bg-white text-white dark:text-black scale-95" : ""}`}
+                } ${isActive && !hasColor ? "bg-black text-white dark:bg-white dark:text-black scale-95" : ""}`}
               >
                 {key}
               </div>

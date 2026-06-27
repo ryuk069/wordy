@@ -3,12 +3,12 @@ import Button from "../Button/Button";
 
 interface HowtoplayProps {
   playgroundRef: React.RefObject<HTMLDivElement | null>;
-  HowtoplayRef: React.RefObject<HTMLDivElement | null>;
+  howToPlayRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const Howtoplay = ({ playgroundRef, HowtoplayRef }: HowtoplayProps) => {
+const Howtoplay = ({ playgroundRef, howToPlayRef }: HowtoplayProps) => {
   function toggleHowToPlay() {
-    const element = HowtoplayRef.current;
+    const element = howToPlayRef.current;
 
     if (!element) return;
 
@@ -20,10 +20,16 @@ const Howtoplay = ({ playgroundRef, HowtoplayRef }: HowtoplayProps) => {
     <>
       <div
         className="howtoplay h-screen w-screen flex items-center justify-center absolute bg-transparent"
-        ref={HowtoplayRef}
+        onClick={toggleHowToPlay}
+        ref={howToPlayRef}
         tabIndex={0}
       >
-        <div className="h-8/10 w-4/10 border-2 border-white p-5 bg-white">
+        <div
+          className="h-8/10 w-4/10 border-2 border-white p-5 bg-white"
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+        >
           <Button iconName={<X />} functionName={toggleHowToPlay} />
         </div>
       </div>

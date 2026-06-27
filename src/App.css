@@ -1,11 +1,12 @@
-.greenStyle {
-  background: green;
+.grayStyle {
+  background: rgb(169, 168, 168);
 }
 
 .orangeStyle {
   background: orange;
+  
 }
 
-.grayStyle {
-  background: gray;
+.greenStyle {
+  background: green;
 }

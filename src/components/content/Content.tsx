@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 type ContentProps = {
   numberOfRows?: number;
@@ -8,6 +8,7 @@ type ContentProps = {
   gridRef: React.RefObject<string[][]>;
   validWords: Set<string>;
   wordToGuess: string;
+  keyRefs: React.RefObject<Record<string, HTMLDivElement | null>>;
 };
 
 const Content = ({
@@ -18,61 +19,102 @@ const Content = ({
   gridRef,
   validWords,
   wordToGuess,
+  keyRefs,
 }: ContentProps) => {
-  function verifyGuess() {
-    const arrOfLetters = wordToGuess.split("");
-    const [row] = positionRef.current;
-    // const grayStyle = {
-    //   background: "gray",
-    // };
-    // const yellowStyle = {
-    //   background: "yellow",
-    // };
-    // const greenStyle = {
-    //   background: "green",
-    // };
+  const boxRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
-    for (let index = 0; index < numberOfLetters; index++) {
-      const boxIndex = row * numberOfLetters + index;
-      if (arrOfLetters.includes(gridRef.current?.[row]?.[index])) {
-        if (gridRef.current?.[row]?.[index] === arrOfLetters[index]) {
-          document
-            .getElementsByClassName(`box-${boxIndex}`)[0]
-            .classList.add("greenStyle");
-        } else {
-          document
-            .getElementsByClassName(`box-${boxIndex}`)[0]
-            .classList.add("orangeStyle");
-        }
-      } else {
-        document
-          .getElementsByClassName(`box-${boxIndex}`)[0]
-          .classList.add("grayStyle");
+  const verifyGuess = useCallback(
+    (row: number) => {
+      const currentRow = gridRef.current[row];
+
+      if (!currentRow) return;
+
+      const remaining = new Map<string, number>();
+
+      for (const letter of wordToGuess) {
+        remaining.set(letter, (remaining.get(letter) ?? 0) + 1);
       }
-    }
-  }
+
+      for (let index = 0; index < numberOfLetters; index++) {
+        const letter = currentRow[index]!;
+        const box = boxRefs.current[row * numberOfLetters + index];
+        const key = keyRefs.current[letter];
+
+        if (!box) continue;
+
+        if (letter === wordToGuess[index]) {
+          box.classList.add("greenStyle");
+
+          remaining.set(letter, remaining.get(letter)! - 1);
+
+          if (key) {
+            key.classList.remove("orangeStyle", "grayStyle");
+            key.classList.add("greenStyle");
+          }
+        }
+      }
+
+      for (let index = 0; index < numberOfLetters; index++) {
+        const letter = currentRow[index]!;
+        const box = boxRefs.current[row * numberOfLetters + index];
+        const key = keyRefs.current[letter];
+
+        if (!box) continue;
+
+        if (box.classList.contains("greenStyle")) continue;
+
+        const remainingCount = remaining.get(letter) ?? 0;
+
+        if (remainingCount > 0) {
+          box.classList.add("orangeStyle");
+          remaining.set(letter, remainingCount - 1);
+
+          if (
+            key &&
+            !key.classList.contains("greenStyle") &&
+            !key.classList.contains("orangeStyle")
+          ) {
+            key.classList.add("orangeStyle");
+          }
+        } else {
+          box.classList.add("grayStyle");
+
+          if (
+            key &&
+            !key.classList.contains("greenStyle") &&
+            !key.classList.contains("orangeStyle")
+          ) {
+            key.classList.add("grayStyle");
+          }
+        }
+      }
+    },
+    [gridRef, keyRefs, numberOfLetters, wordToGuess],
+  );
 
   useEffect(() => {
     if (!activeKey) return;
-    if (!positionRef.current || !gridRef.current) return;
 
     const [row, col] = positionRef.current;
+    const currentRow = gridRef.current[row];
+
+    if (!currentRow) return;
 
     if (activeKey === "Enter") {
-      if (positionRef.current[1] === numberOfLetters) {
-        const guessedWord = gridRef.current[row].join("").toLowerCase();
+      if (col === numberOfLetters) {
+        const guessedWord = currentRow.join("").toLowerCase();
 
         if (!validWords.has(guessedWord)) {
           console.log("Invalid word");
           return;
+        }
+
+        verifyGuess(row);
+
+        if (guessedWord === wordToGuess) {
+          console.log("congrats");
         } else {
-          verifyGuess();
-          if (guessedWord == wordToGuess) {
-            console.log("congrats");
-          } else {
-            positionRef.current[0]++;
-            positionRef.current[1] = 0;
-          }
+          positionRef.current = [row + 1, 0];
         }
       }
 
@@ -82,16 +124,24 @@ const Content = ({
     if (activeKey === "Backspace") {
       if (col === 0) return;
 
-      gridRef.current[row][col - 1] = "";
+      currentRow[col - 1] = "";
       positionRef.current = [row, col - 1];
       return;
     }
 
     if (col >= numberOfLetters) return;
 
-    gridRef.current[row][col] = activeKey.toLowerCase();
+    currentRow[col] = activeKey.toLowerCase();
     positionRef.current = [row, col + 1];
-  }, [activeKey, numberOfLetters, positionRef, gridRef, wordToGuess]);
+  }, [
+    activeKey,
+    numberOfLetters,
+    positionRef,
+    gridRef,
+    wordToGuess,
+    validWords,
+    verifyGuess,
+  ]);
 
   return (
     <div
@@ -108,9 +158,12 @@ const Content = ({
           return (
             <div
               key={index}
+              ref={(el) => {
+                boxRefs.current[index] = el;
+              }}
               className={`border-2 h-13 w-13 flex items-center justify-center uppercase font-bold text-lg box-${index}`}
             >
-              {gridRef.current?.[row]?.[col] ?? ""}
+              {gridRef.current[row]?.[col] ?? ""}
             </div>
           );
         },

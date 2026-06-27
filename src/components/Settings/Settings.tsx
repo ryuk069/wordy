@@ -9,8 +9,12 @@ interface settingsprops {
   SettingsRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const Settings = ({ spaceAsEnter, setSpaceAsEnter, playgroundRef, SettingsRef }: settingsprops) => {
-  
+const Settings = ({
+  spaceAsEnter,
+  setSpaceAsEnter,
+  playgroundRef,
+  SettingsRef,
+}: settingsprops) => {
   function toggleSettings() {
     const element = SettingsRef.current;
 
@@ -25,8 +29,13 @@ const Settings = ({ spaceAsEnter, setSpaceAsEnter, playgroundRef, SettingsRef }:
   }
 
   return (
-    <div className="settings h-screen w-screen flex items-center justify-center absolute" ref={SettingsRef} tabIndex={0}>
-      <div className="h-8/10 w-4/10 border-2 bg-amber-600 p-5">
+    <div
+      className="settings h-screen w-screen flex items-center justify-center absolute"
+      ref={SettingsRef}
+      onClick={toggleSettings}
+      tabIndex={0}
+    >
+      <div className="h-8/10 w-4/10 border-2 bg-amber-600 p-5" onClick={(e) => {e.stopPropagation()}}>
         <Button iconName={<X />} functionName={toggleSettings} />
         <Button iconName={<Space />} functionName={toggleSpaceBarSettings} />
       </div>

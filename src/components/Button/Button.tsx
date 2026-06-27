@@ -3,7 +3,7 @@ type ButtonProps = {
   iconName?: React.ReactNode;
 };
 
-const Button = ({iconName, functionName }: ButtonProps) => {
+const Button = ({ iconName, functionName }: ButtonProps) => {
   const defaultButtonStyle = {
     borderWidth: "2px",
     borderRadius: "6px",

@@ -8,25 +8,19 @@ import {
 import Button from "../Button/Button";
 
 interface NavbarProps {
-  HowtoplayRef: React.RefObject<HTMLDivElement | null>;
+  howToPlayRef: React.RefObject<HTMLDivElement | null>;
   SettingsRef: React.RefObject<HTMLDivElement | null>;
 }
 
-const Navbar = ({ HowtoplayRef, SettingsRef }: NavbarProps) => {
+const Navbar = ({ howToPlayRef, SettingsRef }: NavbarProps) => {
+  
   function changeTheme() {
-    const isDark = document.documentElement.classList.contains("dark");
+    const isDark = document.documentElement.classList.toggle("dark");
 
-    if (isDark) {
-      document.documentElement.classList.remove("dark");
-      localStorage.theme = "light";
-    } else {
-      document.documentElement.classList.add("dark");
-      localStorage.theme = "dark";
-    }
+    localStorage.setItem("theme", isDark ? "dark" : "light");
   }
-
   function howtoplay() {
-    const element = HowtoplayRef.current;
+    const element = howToPlayRef.current;
 
     if (!element) return;
 
