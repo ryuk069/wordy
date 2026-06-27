@@ -1,6 +1,6 @@
 import "./App.css";
 import Navbar from "./components/Navbar/Navbar";
-import Content from "./components/Content/Content";
+import Content from "./components/content/Content";
 import Keyboard from "./components/Keyboard/Keyboard";
 import Howtoplay from "./components/Howtoplay/Howtoplay";
 import { useEffect, useMemo, useRef, useState } from "react";
